@@ -1,0 +1,70 @@
+digraph ATM {
+rankdir=TB;
+start [shape=oval label="Start"];
+insert_card [shape=parallelogram label="Insert Card"];
+enter_pin [shape=parallelogram label="Enter PIN"];
+pin_correct [shape=diamond label="PIN correct?"];
+pin_attempts [shape=diamond label="Attempts < 3?"];
+block_card [shape=box label="Block Card"];
+balance_check [shape=box label="Query Account Balance"];
+enter_amount [shape=parallelogram label="Enter Withdrawal Amount"];
+multiple_check [shape=diamond label="Multiple of 20 TL?"];
+balance_ok [shape=diamond label="Sufficient Balance?"];
+limit_check [shape=diamond label="Daily Limit Exceeded?"];
+dispense_cash [shape=box label="Dispense Cash"];
+print_receipt [shape=box label="Print Receipt"];
+another_transaction [shape=diamond label="Another Transaction?"];
+end [shape=oval label="End"];
+start -> insert_card;
+insert_card -> enter_pin;
+enter_pin -> pin_correct;
+pin_correct -> balance_check [label="YES"];
+pin_correct -> pin_attempts [label="NO"];
+pin_attempts -> enter_pin [label="YES"];
+pin_attempts -> block_card [label="NO"];
+block_card -> end;
+balance_check -> enter_amount;
+enter_amount -> multiple_check;
+multiple_check -> enter_amount [label="NO"];
+multiple_check -> balance_ok [label="YES"];
+balance_ok -> enter_amount [label="NO"];
+balance_ok -> limit_check [label="YES"];
+limit_check -> enter_amount [label="YES"];
+limit_check -> dispense_cash [label="NO"];
+dispense_cash -> print_receipt;
+print_receipt -> another_transaction;
+another_transaction -> enter_amount [label="YES"];
+another_transaction -> end [label="NO"];
+}
+
+
+flowchart TD
+
+A([Start]) --> B[/Insert Card/]
+B --> C[/Enter PIN/]
+
+C --> D{PIN correct?}
+
+D -->|Yes| H[Query Account Balance]
+D -->|No| E{Attempts < 3?}
+
+E -->|Yes| C
+E -->|No| F[Block Card]
+
+F --> Z([End])
+
+H --> I[/Enter Withdrawal Amount/]
+
+I --> J{Multiple of 20 TL?}
+
+J -->|No| I
+J -->|Yes| K{Sufficient Balance?}
+
+K -->|No| I
+K -->|Yes| L{Daily Limit Exceeded?}
+L -->|Yes| I
+L -->|No| M[Dispense Cash]
+M --> N[Print Receipt]
+N --> O{Another Transaction?}
+O -->|Yes| I
+O -->|No| Z
