@@ -1,0 +1,80 @@
+START
+  READ SystemStatus (Active/Inactive)
+  
+  LOOP WHILE SystemStatus IS Active
+    // Sensor Reading Loop
+    READ MotionSensor
+    READ DoorWindowSensor
+    
+    IF MotionSensor OR DoorWindowSensor IS Triggered THEN
+      ACTIVATE Camera
+      READ HomeOwnerPresence
+      
+      IF HomeOwnerPresence IS FALSE THEN
+        DETERMINE AlarmLevel (1-Low, 2-Medium, 3-High)
+        SEND Notifications (SMS + App + Email)
+        PRINT "Alarm Activated!"
+      ELSE
+        PRINT "False Alarm - Homeowner detected."
+      END IF
+    END IF
+    
+    WAIT (Re-check Delay)
+    READ ResetCommand
+    IF ResetCommand IS TRUE THEN
+      RESET Alarm
+    END IF
+  END LOOP
+END
+
+//dote code
+digraph SmartHomeSecurity {
+  rankdir=TB;
+  node [fontname="Arial"];
+
+  start [shape=oval label="START"];
+  active [shape=diamond label="System Active?"];
+  sensors [shape=box label="Continuous Sensor Reading\n(Motion, Door, Window)"];
+  trigger [shape=diamond label="Sensor Triggered?"];
+  camera [shape=box label="Activate Camera"];
+  owner [shape=diamond label="Homeowner Present?"];
+  
+  alarm [shape=box label="Determine Alarm Level\n(Low/Med/High)"];
+  notify [shape=parallelogram label="Send Notifications\n(SMS, App, Email)"];
+  
+  reset [shape=diamond label="Reset Received?"];
+  end [shape=oval label="END"];
+
+  start -> active;
+  active -> sensors [label="YES"];
+  active -> end [label="NO"];
+  
+  sensors -> trigger;
+  trigger -> sensors [label="NO (Keep Monitoring)"];
+  trigger -> camera [label="YES"];
+  
+  camera -> owner;
+  owner -> sensors [label="YES (False Alarm)"];
+  owner -> alarm [label="NO"];
+  
+  alarm -> notify;
+  notify -> reset;
+  
+  reset -> sensors [label="YES"];
+  reset -> notify [label="NO (Stay Active)"];
+}
+//mermaid
+graph TD
+    A([START]) --> B{System Active?}
+    B -- NO --> Z([END])
+    B -- YES --> C[Read Sensors]
+    C --> D{Threat Detected?}
+    D -- NO --> C
+    D -- YES --> E[Activate Camera]
+    E --> F{Homeowner Present?}
+    F -- YES --> C
+    F -- NO --> G[Determine Alarm Level]
+    G --> H[/Send Notifications/]
+    H --> I{Reset Command?}
+    I -- YES --> C
+    I -- NO --> H
