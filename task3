@@ -1,0 +1,103 @@
+//pseudocode
+START
+  READ PatientID
+  
+  LOOP MainMenu
+    PRINT "1- Make Appointment, 2- View Test Results, 3- Exit"
+    READ UserAction
+    
+    IF UserAction == 1 THEN
+      LOOP AppointmentProcess
+        READ SelectedClinic
+        READ SelectedDoctor
+        READ TimeSlot
+        IF SlotAvailable IS TRUE THEN
+          PRINT "Appointment Confirmed. SMS Sent."
+          BREAK AppointmentProcess
+        ELSE
+          PRINT "Slot full, try again."
+        END IF
+      END LOOP
+      
+    ELSE IF UserAction == 2 THEN
+      IF TestsExist IS TRUE THEN
+        IF ResultsReady IS TRUE THEN
+          PRINT "Displaying Results"
+          READ DownloadPDF (YES/NO)
+        ELSE
+          PRINT "Results are not ready yet."
+        END IF
+      ELSE
+        PRINT "No tests found for this ID."
+      END IF
+      
+    END IF
+    
+    READ PerformAnotherAction (YES/NO)
+  UNTIL PerformAnotherAction IS NO OR UserAction == 3
+END
+//dot code
+digraph HospitalSystem {
+  rankdir=TB;
+  node [fontname="Arial"];
+
+  start [shape=oval label="START"];
+  id_check [shape=parallelogram label="Enter Patient ID"];
+  menu [shape=diamond label="Select Action:\n1.Appointment\n2.Test Results"];
+  
+  // Appointment Module
+  clinic [shape=box label="Select Clinic & Doctor"];
+  slot [shape=diamond label="Time Slot Available?"];
+  confirm_app [shape=box label="Confirm & Send SMS"];
+  
+  // Test Results Module
+  test_check [shape=diamond label="Tests Exist?"];
+  ready_check [shape=diamond label="Results Ready?"];
+  show_res [shape=box label="Display Results"];
+  pdf [shape=parallelogram label="Download PDF"];
+  wait_msg [shape=box label="Show Waiting Message"];
+
+  another [shape=diamond label="Another Transaction?"];
+  end [shape=oval label="END"];
+
+  start -> id_check;
+  id_check -> menu;
+  
+  menu -> clinic [label="1"];
+  clinic -> slot;
+  slot -> clinic [label="NO"];
+  slot -> confirm_app [label="YES"];
+  confirm_app -> another;
+  
+  menu -> test_check [label="2"];
+  test_check -> another [label="NO"];
+  test_check -> ready_check [label="YES"];
+  ready_check -> wait_msg [label="NO"];
+  ready_check -> show_res [label="YES"];
+  show_res -> pdf;
+  pdf -> another;
+  wait_msg -> another;
+  
+  another -> menu [label="YES"];
+  another -> end [label="NO"];
+}
+//mermaid code
+graph TD
+    A([START]) --> B[/Enter Patient ID/]
+    B --> C{Select Action}
+    C -- 1.Appointment --> D[Select Clinic & Doctor]
+    D --> E{Slot Available?}
+    E -- NO --> D
+    E -- YES --> F[Confirm & Send SMS]
+    F --> G{Another Action?}
+    
+    C -- 2.Test Results --> H{Tests Exist?}
+    H -- NO --> G
+    H -- YES --> I{Results Ready?}
+    I -- NO --> J[Waiting Message]
+    I -- YES --> K[Display Results]
+    K --> L[/Download PDF/]
+    L --> G
+    J --> G
+    G -- YES --> C
+    G -- NO --> M([END])
