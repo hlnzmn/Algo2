@@ -1,0 +1,107 @@
+//pseudocode
+START
+  READ StudentID, Password
+  IF Authentication IS FALSE THEN
+    PRINT "Invalid Login"
+    GOTO START
+  END IF
+
+  LOOP RegistrationProcess
+    READ SelectedCourse
+    
+    // Validation Checks
+    IF CourseCapacity IS FULL THEN
+      PRINT "Error: Course is full (Quota reached)."
+    ELSE IF PrerequisiteMet IS FALSE THEN
+      PRINT "Error: Prerequisite course not completed."
+    ELSE IF ScheduleConflict IS TRUE THEN
+      PRINT "Error: This course conflicts with your current schedule."
+    ELSE IF TotalCredits + CourseCredits > 35 THEN
+      PRINT "Error: Credit limit (35) exceeded."
+    ELSE
+      ADD CourseToDraft
+      PRINT "Course added to registration list."
+    END IF
+    
+    READ AddMoreCourses (YES/NO)
+  UNTIL AddMoreCourses IS NO
+
+  IF GPA < 2.5 THEN
+    PRINT "Status: Advisor approval required."
+    WAIT FOR AdvisorApproval
+  END IF
+
+  PRINT "Registration Summary Displayed"
+  CONFIRM Registration
+END
+//dot code
+digraph CourseRegistration {
+  rankdir=TB;
+  node [fontname="Arial"];
+
+  start [shape=oval label="START"];
+  login [shape=diamond label="Login Valid?"];
+  view [shape=box label="View Course List"];
+  
+  // Validation Diamonds
+  quota [shape=diamond label="Quota Available?"];
+  pre [shape=diamond label="Prerequisite Met?"];
+  conflict [shape=diamond label="Schedule Conflict?"];
+  credit [shape=diamond label="Total Credits <= 35?"];
+  
+  add [shape=box label="Add to Registration"];
+  more [shape=diamond label="Add Another?"];
+  
+  gpa_check [shape=diamond label="GPA < 2.5?"];
+  advisor [shape=box label="Wait for Advisor Approval"];
+  summary [shape=parallelogram label="Registration Summary"];
+  end [shape=oval label="Registration Confirmed (END)"];
+
+  start -> login;
+  login -> start [label="NO"];
+  login -> view [label="YES"];
+  
+  view -> quota;
+  quota -> view [label="NO (Full)"];
+  quota -> pre [label="YES"];
+  
+  pre -> view [label="NO"];
+  pre -> conflict [label="YES"];
+  
+  conflict -> view [label="NO (Conflict)"];
+  conflict -> credit [label="YES"];
+  
+  credit -> view [label="NO (Limit)"];
+  credit -> add [label="YES"];
+  
+  add -> more;
+  more -> view [label="YES"];
+  more -> gpa_check [label="NO"];
+  
+  gpa_check -> advisor [label="YES"];
+  gpa_check -> summary [label="NO"];
+  
+  advisor -> summary;
+  summary -> end;
+}
+//mermaid code
+graph TD
+    A([START]) --> B{Login Valid?}
+    B -- NO --> A
+    B -- YES --> C[View Course List]
+    C --> D{Quota OK?}
+    D -- NO --> C
+    D -- YES --> E{Prerequisite OK?}
+    E -- NO --> C
+    E -- YES --> F{No Conflict?}
+    F -- NO --> C
+    F -- YES --> G{Credits <= 35?}
+    G -- NO --> C
+    G -- YES --> H[Add Course]
+    H --> I{Add More?}
+    I -- YES --> C
+    I -- NO --> J{GPA < 2.5?}
+    J -- YES --> K[Advisor Approval]
+    J -- NO --> L[/Registration Summary/]
+    K --> L
+    L --> M([END])
