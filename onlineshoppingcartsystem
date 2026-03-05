@@ -1,0 +1,107 @@
+//pseduecode
+START
+  READ UserLogin
+  IF UserLogin IS FALSE THEN
+    PRINT "Please login to continue."
+    GOTO START
+  END IF
+
+  LOOP BrowseCategories
+    READ SelectedProduct
+    IF StockAvailable IS TRUE THEN
+      PRINT "Product added to cart."
+    ELSE
+      PRINT "Product out of stock."
+    END IF
+    READ ContinueBrowsing (YES/NO)
+  UNTIL ContinueBrowsing IS NO
+
+  LOOP EditCart
+    PRINT "Displaying cart contents."
+    READ UpdateCartAction (Add/Remove/None)
+    READ FinishCartEdit (YES/NO)
+  UNTIL FinishCartEdit IS YES
+
+  READ ApplyDiscountCode
+  IF DiscountCode IS VALID THEN
+    APPLY Discount
+  END IF
+
+  IF TotalAmount < 10 THEN
+    PRINT "Error: Minimum order amount must be $10."
+    GOTO EditCart
+  END IF
+
+  IF TotalAmount > 40 THEN
+    SET ShippingFee = 0
+  ELSE
+    SET ShippingFee = 5
+  END IF
+
+  READ PaymentMethodSelection
+  PRINT "Order Confirmed."
+END
+//dot code
+digraph ShoppingCart {
+  rankdir=TB;
+  node [fontname="Arial"];
+
+  start [shape=oval label="START"];
+  login [shape=diamond label="User Logged In?"];
+  browse [shape=box label="Browse Categories"];
+  stock [shape=diamond label="Stock Available?"];
+  edit_cart [shape=box label="View & Edit Cart"];
+  finish_edit [shape=diamond label="Finish Checkout?"];
+  discount [shape=diamond label="Apply Discount Code?"];
+  min_check [shape=diamond label="Total >= $10?"];
+  shipping [shape=diamond label="Total > $40?"];
+  free_ship [shape=box label="Free Shipping"];
+  paid_ship [shape=box label="Shipping Fee ($5)"];
+  payment [shape=parallelogram label="Select Payment Method"];
+  end [shape=oval label="Order Confirmed (END)"];
+
+  start -> login;
+  login -> browse [label="YES"];
+  login -> start [label="NO"];
+  
+  browse -> stock;
+  stock -> edit_cart [label="YES"];
+  stock -> browse [label="NO"];
+  
+  edit_cart -> finish_edit;
+  finish_edit -> edit_cart [label="NO"];
+  finish_edit -> discount [label="YES"];
+  
+  discount -> min_check [label="NO"];
+  discount -> min_check [label="YES (Apply)"];
+  
+  min_check -> edit_cart [label="NO"];
+  min_check -> shipping [label="YES"];
+  
+  shipping -> free_ship [label="YES"];
+  shipping -> paid_ship [label="NO"];
+  
+  free_ship -> payment;
+  paid_ship -> payment;
+  payment -> end;
+}
+//mermaid code
+graph TD
+    A([START]) --> B{User Logged In?}
+    B -- NO --> A
+    B -- YES --> C[Browse Categories]
+    C --> D{Stock Available?}
+    D -- NO --> C
+    D -- YES --> E[View & Edit Cart]
+    E --> F{Finish Checkout?}
+    F -- NO --> E
+    F -- YES --> G{Apply Discount?}
+    G -- YES --> H{Total >= $10?}
+    G -- NO --> H
+    H -- NO --> E
+    H -- YES --> I{Total > $40?}
+    I -- YES --> J[Free Shipping]
+    I -- NO --> K[Shipping Fee Applied]
+    J --> L[/Payment Method/]
+    K --> L
+    L --> M([Order Confirmed])
